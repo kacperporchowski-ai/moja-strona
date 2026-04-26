@@ -1,0 +1,32 @@
+import express from "express";
+import cors from "cors";
+import OpenAI from "openai";
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+app.post("/generate", async (req, res) => {
+  const { name, job, exp } = req.body;
+
+  const prompt = `
+Stwórz profesjonalne CV po polsku:
+
+Imię: ${name}
+Stanowisko: ${job}
+Doświadczenie: ${exp}
+`;
+
+  const response = await client.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [{ role: "user", content: prompt }]
+  });
+
+  res.json({ cv: response.choices[0].message.content });
+});
+
+app.listen(3000, () => console.log("Running"));
